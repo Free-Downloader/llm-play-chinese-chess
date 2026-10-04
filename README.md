@@ -82,28 +82,3 @@ Reply with exactly one legal move in coordinate notation (e.g. "b7e4") or resign
 
 将死 / 困毙（无着可动判负）/ 认输 / 三次重复或步数上限和棋 / 用户按“停止”/
  某方 API 出错或连续返回非法着法（该方判负）。
-
-## 测试
-
-```bash
-python -m unittest discover -s tests        # 规则引擎（含权威 perft 1-3 验证）
-                                            # + 着法解析（含真实会话日志回归）
-python tests/smoke_gui.py                   # 离屏 GUI + 模拟 API 服务器整局冒烟测试
-```
-
-> 测试与日志核对工具（`tests/`、`tools/`）默认不随本仓库发布，仅在本地开发时使用；
-> 若需要一并发布，删掉 `.gitignore` 中 `tests/`、`tools/` 两行即可。
-
-## 日志核对工具
-
-```bash
-python tools/replay_session.py [logs/session_...]   # 用日志里的 FEN 复盘整局：
-                                                    # 每步是否恰好一个合法着法、
-                                                    # 中文记谱/步数/用时是否与 moves.txt 一致、
-                                                    # 终局是否与记录的胜负一致
-python tools/audit_logs.py [logs/session_...]       # 对每个回复跑一遍解析器，
-                                                    # 打印解析出的着法、是否合法、回复结尾
-```
-
-规则引擎已通过 Chess Programming Wiki 的中国象棋 perft 基准
-（depth 1 = 44, 2 = 1920, 3 = 79666）。
