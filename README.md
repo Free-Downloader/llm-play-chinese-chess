@@ -36,34 +36,11 @@ python -m venv .venv
 
 换用其他配置文件：`python main.py --config path/to/config.yaml`
 
-### 先配好密钥，否则连不上
-
-仓库自带的 `config/config.yaml` 里 `api_key` 是空的，`base_url` / `model` 也只是作者当时用的
-服务商（智谱 / 千问的兼容端点），**别人直接跑一定报 401**。二选一：
-
-- **填进配置文件**（自己电脑上最省事）：编辑 `config/config.yaml`，把 `base_url`、`model`
-  改成你自己的服务商，并填入 `api_key`。注意这样填好后不要提交进版本库（见「密钥」）；
-- **用环境变量**（推荐，密钥不落盘）：变量名 = 选手 `name` 转大写、空格和连字符换成下划线，再加 `_API_KEY`。
-
-```bash
-# 例如 name: Red-GLM-5.3-Flash-low  ->  RED_GLM_5.3_FLASH_LOW_API_KEY
-
-# Windows (cmd)
-set RED_GLM_5.3_FLASH_LOW_API_KEY=sk-...
-
-# Windows (PowerShell)
-$env:RED_GLM_5.3_FLASH_LOW_API_KEY = "sk-..."
-
-# macOS / Linux
-export RED_GLM_5.3_FLASH_LOW_API_KEY=sk-...
-```
-
-没设选手专属变量时，程序最后会退回读 `OPENAI_API_KEY`，所以只用一个端点的话，
-直接把密钥放进 `OPENAI_API_KEY`、把两个选手档案都指向它也可以。
+- **填进配置文件**：编辑 `config/config.yaml`
 
 ### 启动后
 
-1. 在「对局控制」里给**红方**、**黑方**各选一个选手档案（来自 `config/config.yaml` 的 `players`）；
+1. 在「对局控制」里给**红方**、**黑方**各选一个选手档案；
 2. 点**「测试双方 API 连接」**，确认两个端点都通；
 3. 点**「开始对弈」**。
 
@@ -126,11 +103,6 @@ extra_body:
 2. 环境变量 `<NAME>_API_KEY` —— 把 `name` 转成大写，**空格和连字符都替换成下划线**（小数点保留）。
    例如 `name: Red-GLM-5.3-Flash-low` 对应 `RED_GLM_5.3_FLASH_LOW_API_KEY`；
 3. 环境变量 `OPENAI_API_KEY`。
-
-> ⚠️ 推荐做法：仓库里的 `config/config.yaml` 保持 `api_key` 为空字符串，密钥用环境变量注入；
-> 或把配置另存为 `config/config.local.yaml`（已被 `.gitignore` 忽略），再用
-> `python main.py --config config/config.local.yaml` 启动。
-> **不要把填好的密钥提交进版本库。**
 
 ## 界面
 
@@ -244,8 +216,3 @@ requirements.txt     依赖清单
 - 亚洲规则里的**长打 / 长将禁着未实现**，只有简单的三次重复判和。
 - 解析器是启发式的：模型答非所问时只能重问，重试耗尽即判该方负。
 - 每手只让模型回一个坐标着法，没有搜索、没有候选评估，棋力完全取决于模型本身。
-
-## 许可证
-
-本仓库目前未附开源许可证，默认保留全部权利。若要允许他人使用、修改、分发，
-请添加 `LICENSE`（MIT、Apache-2.0 等）。
