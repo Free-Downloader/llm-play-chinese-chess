@@ -15,7 +15,9 @@
 
 ## 快速开始
 
-需要 **Python 3.9 或以上**（本项目在 3.13 上开发与验证），Windows / macOS / Linux 均可，界面基于 PySide6。
+需要 **Python 3.10 或以上**（代码用到 `dict[...]` / `tuple[int, int] | None` 这类新语法，
+3.9 会在导入阶段直接报错；本项目在 3.12 / 3.13 上开发与验证），
+Windows / macOS / Linux 均可，界面基于 PySide6。
 
 ```bash
 git clone https://github.com/Free-Downloader/llm-play-chinese-chess.git
@@ -34,13 +36,39 @@ python -m venv .venv
 
 换用其他配置文件：`python main.py --config path/to/config.yaml`
 
-启动后：
+### 先配好密钥，否则连不上
+
+仓库自带的 `config/config.yaml` 里 `api_key` 是空的，`base_url` / `model` 也只是作者当时用的
+服务商（智谱 / 千问的兼容端点），**别人直接跑一定报 401**。二选一：
+
+- **填进配置文件**（自己电脑上最省事）：编辑 `config/config.yaml`，把 `base_url`、`model`
+  改成你自己的服务商，并填入 `api_key`。注意这样填好后不要提交进版本库（见「密钥」）；
+- **用环境变量**（推荐，密钥不落盘）：变量名 = 选手 `name` 转大写、空格和连字符换成下划线，再加 `_API_KEY`。
+
+```bash
+# 例如 name: Red-GLM-5.3-Flash-low  ->  RED_GLM_5.3_FLASH_LOW_API_KEY
+
+# Windows (cmd)
+set RED_GLM_5.3_FLASH_LOW_API_KEY=sk-...
+
+# Windows (PowerShell)
+$env:RED_GLM_5.3_FLASH_LOW_API_KEY = "sk-..."
+
+# macOS / Linux
+export RED_GLM_5.3_FLASH_LOW_API_KEY=sk-...
+```
+
+没设选手专属变量时，程序最后会退回读 `OPENAI_API_KEY`，所以只用一个端点的话，
+直接把密钥放进 `OPENAI_API_KEY`、把两个选手档案都指向它也可以。
+
+### 启动后
 
 1. 在「对局控制」里给**红方**、**黑方**各选一个选手档案（来自 `config/config.yaml` 的 `players`）；
 2. 点**「测试双方 API 连接」**，确认两个端点都通；
 3. 点**「开始对弈」**。
 
-第三方依赖只有三个：PySide6、PyYAML、requests（见 `requirements.txt`）。
+第三方依赖只有三个：PySide6、PyYAML、requests（见 `requirements.txt`，都是下限约束，
+没有锁定具体版本；用到的是各库的稳定 API，新版本一般可直接用）。
 
 ## 配置
 
@@ -75,7 +103,7 @@ extra_body:
 | 键 | 缺省 | 说明 |
 |---|---|---|
 | `delay_between_moves_ms` | 500 | 两手之间的停顿毫秒数，方便观战 |
-| `request_timeout_s` | 120 | 单次 HTTP 请求超时秒数。思考模型一次要几分钟，请调到比最慢的回复更宽松 |
+| `request_timeout_s` | 120 | 单次 HTTP 请求超时秒数。**注意**：程序内置缺省是 120，但仓库自带的 `config/config.yaml` 里写的是 600；改配置时以文件里的值为准。思考模型一次要几分钟，请调到比最慢的回复更宽松 |
 | `invalid_move_retries` | 2 | 模型回了非法或无法解析的内容时，重问几次 |
 | `request_retries` | 2 | 网络中断 / HTTP 失败时，重试几次 |
 | `max_fullmoves` | 200 | 回合数（红+黑各一手）上限，达到判和；`0` 表示不限 |
@@ -205,6 +233,11 @@ ui/
 Art_Assets/          棋盘与棋子美术资源
 requirements.txt     依赖清单
 ```
+
+> 仓库只发布运行程序本身。`tests/`（规则审计、e2e 试跑）和 `tools/`（日志审计、棋局回放）
+> 是本地开发文件，已在 `.gitignore` 中排除，克隆下来不会看到；
+> 想一起发布就把 `.gitignore` 里对应的两行删掉再 `git add tests tools`。
+> 另外还有 `preview/`（截图与真实对局文本）同样未入库。
 
 ## 已知限制
 
