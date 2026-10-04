@@ -1,0 +1,97 @@
+# ============================================================
+# LLM Play Chinese Chess - configuration file
+# All program options are read from this file.
+# ============================================================
+
+game:
+  # Delay (milliseconds) between the two models' moves, so spectators can follow.
+  delay_between_moves_ms: 500
+
+  # How many times a model is re-asked when it returns an illegal move
+  # before the game is stopped with an error (the offending side loses).
+  invalid_move_retries: 2
+
+  # How many times a failed HTTP request (timeout, connection reset, ...) is
+  # retried. This budget is separate from invalid_move_retries, so a flaky
+  # connection cannot use up the retries meant for illegal answers.
+  request_retries: 2
+
+  # HTTP timeout (seconds) for a single LLM request.
+  # Thinking models can take several minutes: the 2026-09-23 session had
+  # successful replies after 269s and two 300s read timeouts, each of which
+  # cost a whole extra round trip. Keep this comfortably above the slowest
+  # expected reply.
+  request_timeout_s: 600
+
+  # Stop the game as a draw when this many full moves (Red + Black) are played.
+  # 0 means no limit.
+  max_fullmoves: 200
+
+  # Declare a draw when the same position (side to move included) occurs
+  # this many times. Note: the full Asian "perpetual attack" rule is NOT
+  # implemented, only a simple threefold repetition rule.
+  threefold_repetition: true
+
+prompts:
+  # Whether the models are told that they may resign (reply exactly "resign").
+  allow_resign: true
+
+  # System prompt (English). {side} is replaced with "Red" or "Black".
+  # Keep it short - too much information distracts the model.
+  system: |
+    You are an expert Xiangqi (Chinese Chess) player. You will be given the
+    current position as a FEN string, told which side you play, and given the
+    complete list of legal moves in coordinate notation (e.g. "b7e4" means the
+    piece on b7 moves to e4; files are letters a-i from left to right as seen
+    from Red's side, ranks are digits 0-9 from Black's back rank to Red's back
+    rank). Your goal is to win the game. Analyze the position carefully, then
+    choose the single best legal move for {side}.
+
+# ------------------------------------------------------------
+# Player profiles. Each profile describes one LLM endpoint in
+# OpenAI-compatible chat-completions format. Assign profiles to
+# Red / Black in the main window before pressing Start.
+#
+# If api_key is empty, the environment variables
+#   <PROFILE_NAME>_API_KEY  (uppercase, spaces -> underscores)
+#   OPENAI_API_KEY
+# are tried in that order.
+# ------------------------------------------------------------
+players:
+  - name: Red-GLM-5.3-Flash-low
+    base_url: "https://maas.qianwenaiapi.com/compatible-mode/v1"
+    api_key: ""
+    model: "ZHIPU/GLM-5.3-Flash"
+    temperature: 0.1
+    max_tokens: 131000
+    # Optional per-player override of the system prompt; empty = use prompts.system.
+    system_prompt: ""
+    # Optional extra HTTP headers, e.g. { "X-Custom": "value" }.
+    extra_headers: {}
+    # Provider-specific parameters merged verbatim into the request JSON body.
+    # This is where the thinking / reasoning level goes. Examples:
+    #   DeepSeek thinking mode:           extra_body:
+    #                                       thinking: { type: "enabled" }   # switch, default on
+    #                                       reasoning_effort: "high"        # low | high | max
+    #   OpenAI o-series / compatible:     extra_body: { "reasoning_effort": "high" }
+    #                                     (values: "low" | "medium" | "high")
+    #   Claude-compatible thinking:       extra_body: { "thinking": { "type": "enabled",
+    #                                                 "budget_tokens": 4000 } }
+    # Any key here also overrides the standard temperature / max_tokens above.
+    # NOTE: deepseek-flash 开思考时 reasoning 长达 2.4 万+ 字符，8192 token
+    # 预算全部被思考占满导致 content 为空。如需思考请换更大 max_tokens 的模型。
+    extra_body:
+        thinking: { type: "enabled" }
+        reasoning_effort: "low"
+
+  - name: Black-Qwen3.8-flash-low
+    base_url: "https://maas.qianwenaiapi.com/compatible-mode/v1"
+    api_key: ""
+    model: "qwen3.8-flash"
+    temperature: 0.1
+    max_tokens: 131000
+    system_prompt: ""
+    extra_headers: {}
+    extra_body:
+        thinking: { type: "enabled" }
+        reasoning_effort: "low"              # max 档思考会占满 8192 token 预算导致返回残缺
