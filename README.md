@@ -44,9 +44,6 @@ python -m venv .venv
 2. 点**「测试双方 API 连接」**，确认两个端点都通；
 3. 点**「开始对弈」**。
 
-第三方依赖只有三个：PySide6、PyYAML、requests（见 `requirements.txt`，都是下限约束，
-没有锁定具体版本；用到的是各库的稳定 API，新版本一般可直接用）。
-
 ## 配置
 
 默认读取 `config/config.yaml`，每一项都带注释。分三部分。
@@ -132,8 +129,6 @@ extra_body:
 | `red_api.log` / `black_api.log` | 对应日志窗口内容的完整镜像 |
 | `moves.txt` | 中文记谱棋谱，含每手思考用时与最终结果 |
 
-`logs/` 已在 `.gitignore` 中，不会进版本库。
-
 ## 对弈协议
 
 ### 每次发给模型的内容
@@ -205,11 +200,6 @@ ui/
 Art_Assets/          棋盘与棋子美术资源
 requirements.txt     依赖清单
 ```
-
-> 仓库只发布运行程序本身。`tests/`（规则审计、e2e 试跑）和 `tools/`（日志审计、棋局回放）
-> 是本地开发文件，已在 `.gitignore` 中排除，克隆下来不会看到；
-> 想一起发布就把 `.gitignore` 里对应的两行删掉再 `git add tests tools`。
-> 另外还有 `preview/`（截图与真实对局文本）同样未入库。
 
 ## 已知限制
 
